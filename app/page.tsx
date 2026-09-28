@@ -7,22 +7,14 @@ import { FAN_TABLE } from "@/lib/table";
 import type { Hand } from "@/lib/types";
 import { tileName } from "@/lib/tiles";
 import { viewHand, type TileFace } from "@/lib/view";
+import { TileArt } from "@/components/TileArt";
 
 type Stats = { ok: number; bad: number; streak: number };
 
-function tone(id: string): string {
-  if (id.endsWith("m") || id === "C") return "#c23a2e";
-  if (id.endsWith("p") || id === "B") return "#1d4e89";
-  if (id.endsWith("s") || id === "F") return "#187a43";
-  if (id.startsWith("SE")) return "#c23a2e";
-  if (id.startsWith("GR")) return "#1d4e89";
-  return "#222";
-}
-
 function Tile({ face, flower }: { face: TileFace; flower?: boolean }) {
   const tile = (
-    <span className={`tile ${flower ? "flower" : ""} ${face.win ? "win" : ""}`} style={{ color: tone(face.id) }}>
-      {tileName(face.id)}
+    <span className={`tile ${flower ? "flower" : ""} ${face.win ? "win" : ""}`} aria-label={tileName(face.id)}>
+      <TileArt id={face.id} />
     </span>
   );
   if (!face.win || flower) return tile;
