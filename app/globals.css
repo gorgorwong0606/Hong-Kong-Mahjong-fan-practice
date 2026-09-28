@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #f4efe4;
+  font-family: "WenQuanYi Micro Hei", "Noto Sans CJK TC", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  background:
+    radial-gradient(1200px 500px at 20% -10%, rgba(255, 214, 120, 0.16), transparent 50%),
+    radial-gradient(900px 600px at 100% 0%, rgba(80, 160, 110, 0.2), transparent 45%),
+    #12382c;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+.tile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.65rem;
+  height: 3.45rem;
+  border-radius: 0.45rem;
+  background: linear-gradient(180deg, #fffaf1, #efe4d0);
+  color: #1c1c1c;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 6px 10px rgba(0, 0, 0, 0.28);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.04em;
+}
+
+.tile.win {
+  outline: 2px solid #e7b008;
+  outline-offset: 1px;
+}
+
+.tile .hu {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 0.55rem;
+  font-style: normal;
+  color: #a15c00;
+}
+
+.flower {
+  width: 2.2rem;
+  height: 2.9rem;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 640px) {
+  .tile {
+    width: 3.15rem;
+    height: 4.1rem;
+    font-size: 1.05rem;
+  }
+  .flower {
+    width: 2.5rem;
+    height: 3.3rem;
+  }
+}
