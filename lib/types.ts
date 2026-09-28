@@ -53,7 +53,7 @@ export type Hand = {
 
 export type Line = { name: string; fan: number; why: string };
 
-export function blankFlags(wallLeft = 46): WinFlags {
+export function blankFlags(wallLeft = -1): WinFlags {
   return {
     tenpai: false,
     ippatsu: false,

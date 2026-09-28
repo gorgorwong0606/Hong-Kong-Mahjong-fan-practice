@@ -48,10 +48,11 @@ function maybeTenpai(h: Hand, p = 0.4) {
     if (chance(0.45)) h.flags.ippatsu = true;
   }
 }
-function maybeWall(h: Hand) {
+function rollWall(): number {
   const r = Math.random();
-  if (r < 0.1) h.flags.wallLeft = 1 + ri(7);
-  else if (r < 0.18) h.flags.wallLeft = 8 + ri(3);
+  if (r < 0.12) return 1 + ri(7);
+  if (r < 0.22) return 8 + ri(3);
+  return 11 + ri(32);
 }
 function openOthers(melds: Meld[], winAt: number | "pair", n: number) {
   const idx = melds.map((_, i) => i).filter((i) => i !== winAt);
@@ -63,7 +64,9 @@ function openOthers(melds: Meld[], winAt: number | "pair", n: number) {
 }
 
 function shell(partial: Omit<Hand, "flowers" | "flags"> & { flowers?: string[]; flags?: Hand["flags"] }): Hand {
-  return { flowers: [], flags: blankFlags(), ...partial };
+  const h: Hand = { flowers: [], flags: blankFlags(), ...partial };
+  if (h.flags.wallLeft < 0) h.flags.wallLeft = rollWall();
+  return h;
 }
 
 function jiHu(): Hand {
@@ -118,7 +121,6 @@ function pingMixed(): Hand {
     flowers: chance(0.55) ? flowers(1 + ri(2)) : [],
   });
   maybeTenpai(h, 0.35);
-  maybeWall(h);
   return h;
 }
 
@@ -140,7 +142,6 @@ function daSanYuan(): Hand {
     flowers: chance(0.4) ? flowers(1 + ri(3)) : [],
   });
   maybeTenpai(h);
-  maybeWall(h);
   return h;
 }
 
@@ -205,7 +206,6 @@ function qingYiSe(): Hand {
     flowers: chance(0.4) ? flowers(1 + ri(4)) : [],
   });
   maybeTenpai(h, 0.35);
-  maybeWall(h);
   return h;
 }
 
@@ -597,7 +597,6 @@ function laoShao(): Hand {
     flowers: chance(0.35) ? flowers(1 + ri(2)) : [],
   });
   maybeTenpai(h, 0.35);
-  maybeWall(h);
   return h;
 }
 
