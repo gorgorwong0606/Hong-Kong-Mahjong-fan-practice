@@ -182,7 +182,7 @@ function addQuad(lines: Line[], tiles: string[], melds: Meld[]) {
   push(lines, concealed ? `${names[n]}（暗）` : names[n], concealed ? anFan[n] : openFan[n], why);
 }
 
-function addDoors(lines: Line[], tiles: string[]) {
+function addDoors(lines: Line[], tiles: string[], flowers: string[]) {
   const suits = new Set<string>();
   const winds = new Set<string>();
   let dragon = false;
@@ -191,11 +191,11 @@ function addDoors(lines: Line[], tiles: string[]) {
     else if ("ESWN".includes(t)) winds.add(t);
     else if ("CFB".includes(t)) dragon = true;
   }
-  if (suits.size === 3 && winds.size === 4) {
-    push(lines, "七門齊", 15, "萬筒索加東南西北齊");
-  } else if (suits.size === 3 && winds.size >= 1 && dragon) {
-    push(lines, "五門齊", 10, "筒索萬、風、箭齊");
-  }
+  const red = flowers.some((f) => f.startsWith("SE"));
+  const blue = flowers.some((f) => f.startsWith("GR"));
+  const door = suits.size === 3 && winds.size >= 1 && dragon;
+  if (door && red && blue) push(lines, "七門齊", 15, "萬筒索、一款箭、一款風，紅花藍花各一");
+  else if (door && red) push(lines, "五門齊", 10, "萬筒索、一款箭、一款風，再加一隻紅花");
   if (suits.size === 2) push(lines, "缺一門", 5, "番子不計，缺一門數子");
   return suits;
 }
@@ -295,7 +295,7 @@ function addTerminals(h: Hand, lines: Line[], tiles: string[], meldsForQuad: Mel
   if (hasSuit && !honor && ranks.every((r) => r !== 5)) push(lines, "缺五", 10, "無五、無番子");
 
   addQuad(lines, tiles, meldsForQuad);
-  addDoors(lines, tiles);
+  addDoors(lines, tiles, h.flowers);
   return qingyao;
 }
 
@@ -581,7 +581,7 @@ function addSpecial(h: Hand, lines: Line[]): { pinghu: boolean; noHonor: boolean
   if (sp.kind === "budai" && sp.bonus === "xiang") push(lines, "十六不搭三相逢（暗）", 20, "另加");
   if (sp.kind === "budai" && sp.bonus === "long") push(lines, "十六不搭雜龍（暗）", 20, "另加");
   addColors(lines, tiles, false);
-  addDoors(lines, tiles);
+  addDoors(lines, tiles, h.flowers);
   if (!tiles.some(isHonor) && tiles.filter(isSuit).every((t) => rank(t) !== 5)) push(lines, "缺五", 10, "");
   return { pinghu: false, noHonor };
 }

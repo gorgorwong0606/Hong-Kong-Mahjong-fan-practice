@@ -14,7 +14,8 @@ function tone(id: string): string {
   if (id.endsWith("m") || id === "C") return "#c23a2e";
   if (id.endsWith("p") || id === "B") return "#1d4e89";
   if (id.endsWith("s") || id === "F") return "#187a43";
-  if (id.startsWith("SE") || id.startsWith("GR")) return "#9a3460";
+  if (id.startsWith("SE")) return "#c23a2e";
+  if (id.startsWith("GR")) return "#1d4e89";
   return "#222";
 }
 

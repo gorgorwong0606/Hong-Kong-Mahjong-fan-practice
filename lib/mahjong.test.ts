@@ -192,7 +192,7 @@ expectScore(
     seat: "S",
     round: "E",
   }),
-  { 五暗刻: 80, 對對胡: 30, 大三兄弟: 20, 混帶三: 20, 五門齊: 10, 門清自摸: 8, 獨獨: 2, 箭: 2, "正風／正圈": 2, 無花: 1 },
+  { 五暗刻: 80, 對對胡: 30, 大三兄弟: 20, 混帶三: 20, 門清自摸: 8, 獨獨: 2, 箭: 2, "正風／正圈": 2, 無花: 1 },
 );
 
 expectScore(
@@ -209,7 +209,7 @@ expectScore(
       extra: chow("2m", "3m", "4m"),
     },
   }),
-  { 十三么: 90, 七門齊: 15, 門清自摸: 8, 假獨: 1, 無花: 1 },
+  { 十三么: 90, 門清自摸: 8, 假獨: 1, 無花: 1 },
 );
 
 expectScore(
@@ -266,7 +266,31 @@ expectScore(
     winBy: "ron",
     winAt: 0,
   }),
-  { 三暗刻: 15, 五門齊: 10, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 無花: 1 },
+  { 三暗刻: 15, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 無花: 1 },
+);
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m"), pung("3p"), pung("3s"), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 0,
+    flowers: ["SE2"],
+  }),
+  { 三暗刻: 15, 五門齊: 10, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 正花: 2 },
+);
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m"), pung("3p"), pung("3s"), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 0,
+    flowers: ["GR2"],
+  }),
+  { 三暗刻: 15, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 正花: 2 },
 );
 
 expectScore(
@@ -279,7 +303,22 @@ expectScore(
     winAt: 0,
     flowers: ["SE1", "GR3"],
   }),
-  { 三暗刻: 15, 五門齊: 10, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 正花: 2, 爛花: 1 },
+  { 三暗刻: 15, 七門齊: 15, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 正花: 2, 爛花: 1 },
+);
+
+expectScore(
+  hand({
+    seat: "E",
+    round: "S",
+    melds: [chow("7m", "8m", "9m", true), pung("5p", true), chow("1m", "2m", "3m"), pung("5s"), pung("C")],
+    pair: "W",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 2,
+    flowers: ["SE1", "SE3", "GR4"],
+    flags: { ...blankFlags(), tenpai: true, ippatsu: true, wallLeft: 46 },
+  }),
+  { 七門齊: 15, 聽牌: 5, 一發: 5, 二兄弟: 5, 二暗刻: 5, 老少: 3, 箭: 2, 正花: 2, 爛花: 2 },
 );
 
 expectScore(
@@ -290,7 +329,7 @@ expectScore(
     winBy: "ron",
     winAt: 0,
   }),
-  { 五門齊: 10, 二兄弟: 5, 二暗刻: 5, 老少: 3, 箭: 2, 無花: 1 },
+  { 二兄弟: 5, 二暗刻: 5, 老少: 3, 箭: 2, 無花: 1 },
 );
 
 const shown = viewHand(

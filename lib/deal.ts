@@ -27,6 +27,13 @@ function kong(t: string, open = false): Meld {
 function ctx() {
   return { seat: pick(WINDS), round: pick(WINDS), dealer: chance(0.28) };
 }
+function doorFlowers() {
+  if (chance(0.18)) return [];
+  const red = flowers(1 + ri(2)).filter((id) => id.startsWith("SE"));
+  const season = red[0] ?? pick(SEASONS);
+  if (chance(0.42)) return [...new Set([season, pick(GRASSES)])];
+  return [season];
+}
 function flowers(n: number) {
   const all = [...SEASONS, ...GRASSES];
   for (let i = all.length - 1; i > 0; i--) {
@@ -625,7 +632,7 @@ function commonDoor(): Hand {
     winTile: win.tile,
     winBy: chance(0.42) ? "zimo" : "ron",
     winAt: win.at,
-    flowers: chance(0.7) ? flowers(1 + ri(3)) : [],
+    flowers: doorFlowers(),
   });
   if (chance(0.12)) maybeTenpai(h, 1);
   return h;
