@@ -50,7 +50,6 @@ export function viewHand(h: Hand): HandView {
   else if (f.gangShang) tags.push("槓上");
   if (f.qiangGangGang) tags.push("搶槓上槓");
   else if (f.qiangGang) tags.push("搶槓");
-  tags.push(`牌牆剩 ${f.wallLeft} 隻`);
   const waitName: Record<string, string> = {
     ryanmen: "兩面",
     penchan: "邊張",

@@ -35,7 +35,6 @@ export const FAN_TABLE: { name: string; fan: string; note: string }[] = [
   { name: "步步高 三色／清色", fan: "5 / 10", note: "最多各一" },
   { name: "混一色 / 清一色 / 對對胡", fan: "30 / 90 / 30", note: "" },
   { name: "全求人 / 半求人", fan: "15 / 8", note: "全落地單釣" },
-  { name: "七只內 / 十只內", fan: "30 / 15", note: "只計牌牆" },
   { name: "小三元 / 大三元", fan: "25 / 50", note: "箭刻 2 番另計" },
   { name: "小三風 / 大三風", fan: "20 / 40", note: "" },
   { name: "小四喜 / 大四喜", fan: "60 / 120", note: "風刻另計" },

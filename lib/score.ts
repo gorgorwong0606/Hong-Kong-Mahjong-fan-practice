@@ -164,8 +164,6 @@ function addSituation(h: Hand, lines: Line[]) {
     push(lines, "槓上槓食胡", 30 * f.gangShangGang, f.gangShangGang === 2 ? "30+30" : "隔花不計");
   } else if (f.gangShang) push(lines, "槓上食胡", 1, "");
   if (f.huaShang) push(lines, "花上食胡", 1, "");
-  if (f.wallLeft >= 0 && f.wallLeft <= 7) push(lines, "七只內", 30, `牌牆剩 ${f.wallLeft} 隻`);
-  else if (f.wallLeft >= 8 && f.wallLeft <= 10) push(lines, "十只內", 15, `牌牆剩 ${f.wallLeft} 隻`);
 }
 
 function addQuad(lines: Line[], tiles: string[], melds: Meld[]) {
