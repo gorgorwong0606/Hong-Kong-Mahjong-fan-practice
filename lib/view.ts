@@ -1,28 +1,39 @@
 import { isMenqing, waitShape } from "./score";
-import type { Hand } from "./types";
-import { WIND_NAME, tileName, tileSort } from "./tiles";
+import type { Hand, Meld } from "./types";
+import { WIND_NAME, tileSort } from "./tiles";
 
 export type TileFace = { id: string; win: boolean };
-export type ViewGroup = { label: string; open: boolean; tiles: TileFace[] };
 
-function faces(tiles: string[], winTile: string, hot: boolean): TileFace[] {
-  let used = false;
-  return tiles.map((id) => {
-    const win = hot && !used && id === winTile;
-    if (win) used = true;
-    return { id, win };
-  });
+export type HandView = {
+  title: string;
+  tags: string[];
+  note: string;
+  called: TileFace[][];
+  closed: TileFace[][];
+  win: TileFace | null;
+};
+
+function sorted(tiles: string[]): string[] {
+  return [...tiles].sort(tileSort);
 }
 
-function meldLabel(kind: string, open: boolean) {
-  if (kind === "chow") return open ? "上" : "順";
-  if (kind === "kong") return open ? "明槓" : "暗槓";
-  return open ? "碰" : "暗刻";
+function splitWin(tiles: string[], hot: boolean, winTile: string): { rest: TileFace[]; win: TileFace | null } {
+  const rest: TileFace[] = [];
+  let win: TileFace | null = null;
+  for (const id of tiles) {
+    if (hot && !win && id === winTile) win = { id, win: true };
+    else rest.push({ id, win: false });
+  }
+  return { rest, win };
 }
 
-export function viewHand(h: Hand): { title: string; tags: string[]; groups: ViewGroup[]; note: string } {
+function meldTiles(m: Meld): string[] {
+  return sorted(m.tiles);
+}
+
+export function viewHand(h: Hand): HandView {
   const title = `${WIND_NAME[h.round]}圈 · ${WIND_NAME[h.seat]}門 · ${h.dealer ? "莊家" : "閒家"}`;
-  const tags: string[] = [h.winBy === "zimo" ? "自摸" : "出沖"];
+  const tags: string[] = [h.winBy === "zimo" ? "自摸" : "食出"];
   if (isMenqing(h) && !h.flags.diHu && !h.flags.renHu) tags.push("門清");
   const f = h.flags;
   if (f.tenpai) tags.push("聽牌");
@@ -40,8 +51,6 @@ export function viewHand(h: Hand): { title: string; tags: string[]; groups: View
   if (f.qiangGangGang) tags.push("搶槓上槓");
   else if (f.qiangGang) tags.push("搶槓");
   tags.push(`牌牆剩 ${f.wallLeft} 隻`);
-
-  const wait = waitShape(h);
   const waitName: Record<string, string> = {
     ryanmen: "兩面",
     penchan: "邊張",
@@ -50,71 +59,53 @@ export function viewHand(h: Hand): { title: string; tags: string[]; groups: View
     pung: "食刻",
     other: "",
   };
-  if (waitName[wait]) tags.push(waitName[wait]);
+  const wait = waitName[waitShape(h)];
+  if (wait) tags.push(wait);
 
-  const groups: ViewGroup[] = [];
-  let note = "暗牌已拆好組，跟畫面計。金邊係食胡嗰隻。";
-  if (h.flags.diHu || h.flags.renHu) note += " 地胡、人胡唔計門清。";
+  const called: TileFace[][] = [];
+  const closed: TileFace[][] = [];
+  let win: TileFace | null = null;
+  const take = (tiles: string[], hot: boolean) => {
+    const part = splitWin(tiles, hot, h.winTile);
+    if (part.win) win = part.win;
+    return part.rest;
+  };
 
   if (h.special?.kind === "ligu") {
-    note = h.special.baFei
-      ? "特殊牌型：嚦咕嚦咕，叫八飛。八對子，唔使五組一對。"
-      : "特殊牌型：嚦咕嚦咕。八對子，三隻一樣唔計碰。";
-    tags.push(h.special.baFei ? "八飛" : "嚦咕嚦咕");
     h.special.pairs.forEach((p) => {
-      groups.push({ label: "對", open: false, tiles: faces([p, p], h.winTile, p === h.winTile) });
+      const rest = take([p, p], p === h.winTile);
+      if (rest.length) closed.push(rest);
     });
   } else if (h.special?.kind === "yao") {
-    note = "特殊牌型：十三么，另三隻係自己摸返嚟嘅順子或暗刻。";
-    tags.push("十三么");
-    const yaoTiles = [...h.special.singles, h.special.pair, h.special.pair].sort(tileSort);
-    groups.push({
-      label: "十三么",
-      open: false,
-      tiles: faces(yaoTiles, h.winTile, h.winTile === h.special.pair),
-    });
-    const ex = h.special.extra;
-    groups.push({
-      label: meldLabel(ex.kind, false),
-      open: false,
-      tiles: faces([...ex.tiles].sort(tileSort), h.winTile, ex.tiles.includes(h.winTile)),
-    });
+    const yao = sorted([...h.special.singles, h.special.pair, h.special.pair]);
+    const rest = take(yao, h.winTile === h.special.pair);
+    if (rest.length) closed.push(rest);
+    const extra = take(sorted(h.special.extra.tiles), h.special.extra.tiles.includes(h.winTile));
+    if (extra.length) closed.push(extra);
   } else if (h.special?.kind === "budai") {
-    note =
-      h.special.bonus === "xiang"
-        ? "特殊牌型：十六不搭，三門構成三相逢，暗，另加。"
-        : h.special.bonus === "long"
-          ? "特殊牌型：十六不搭，三門構成雜龍，暗，另加。"
-          : "特殊牌型：十六不搭。七星加三門不搭，再加一對眼。";
-    tags.push("十六不搭");
-    if (h.special.bonus === "xiang") tags.push("三相逢");
-    if (h.special.bonus === "long") tags.push("雜龍");
-    const honors = [...h.special.honors, h.special.pair, h.special.pair].sort(tileSort);
-    groups.push({ label: "字", open: false, tiles: faces(honors, h.winTile, true) });
-    const suitName = ["萬", "筒", "索"];
-    h.special.cols.forEach((col, i) => {
-      groups.push({ label: suitName[i] ?? "數", open: false, tiles: faces([...col].sort(tileSort), h.winTile, false) });
+    const honors = sorted([...h.special.honors, h.special.pair, h.special.pair]);
+    const rest = take(honors, true);
+    if (rest.length) closed.push(rest);
+    h.special.cols.forEach((col) => {
+      const tiles = take(sorted(col), false);
+      if (tiles.length) closed.push(tiles);
     });
   } else {
     h.melds.forEach((m, i) => {
-      const tiles = [...m.tiles].sort(tileSort);
-      groups.push({
-        label: meldLabel(m.kind, m.open),
-        open: m.open,
-        tiles: faces(tiles, h.winTile, h.winAt === i),
-      });
+      const rest = take(meldTiles(m), h.winAt === i);
+      if (!rest.length) return;
+      if (m.open) called.push(rest);
+      else closed.push(rest);
     });
-    groups.push({
-      label: "眼",
-      open: false,
-      tiles: faces([h.pair, h.pair], h.winTile, h.winAt === "pair"),
-    });
+    const pair = take([h.pair, h.pair], h.winAt === "pair");
+    if (pair.length) closed.push(pair);
   }
 
-  return { title, tags, groups, note };
-}
+  const note = h.special
+    ? "打橫嗰隻係今次食胡。"
+    : called.length
+      ? "上面係出街嘅牌，下面係手牌。打橫嗰隻係今次食胡。"
+      : "冇出街，全部係手牌。打橫嗰隻係今次食胡。";
 
-export function flowerNames(ids: string[]): string {
-  if (!ids.length) return "無花";
-  return ids.map(tileName).join(" ");
+  return { title, tags, note, called, closed, win };
 }

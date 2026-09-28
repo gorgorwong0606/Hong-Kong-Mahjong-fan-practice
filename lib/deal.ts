@@ -594,6 +594,79 @@ function laoShao(): Hand {
   return h;
 }
 
+/** 一二三 + 七八九、兩門同數刻、箭刻、風眼。日常最常見嘅五門齊形。 */
+function commonDoor(): Hand {
+  const c = ctx();
+  const lao = pick(SUITS);
+  const rest = SUITS.filter((s) => s !== lao);
+  const n = 2 + ri(7);
+  const dragon = pick(["C", "F", "B"]);
+  const melds = [
+    chow(`1${lao}`, `2${lao}`, `3${lao}`),
+    chow(`7${lao}`, `8${lao}`, `9${lao}`),
+    pung(`${n}${rest[0]}`),
+    pung(`${n}${rest[1]}`),
+    pung(dragon),
+  ];
+  const wins = [
+    { at: 0, tile: `1${lao}` },
+    { at: 0, tile: `2${lao}` },
+    { at: 1, tile: `8${lao}` },
+    { at: 1, tile: `9${lao}` },
+  ];
+  const win = pick(wins);
+  const calls = chance(0.78) ? 1 + (chance(0.42) ? 1 : 0) : 0;
+  openOthers(melds, win.at, calls);
+  const h = shell({
+    ...c,
+    source: "老少門",
+    melds,
+    pair: pick(WINDS),
+    winTile: win.tile,
+    winBy: chance(0.42) ? "zimo" : "ron",
+    winAt: win.at,
+    flowers: chance(0.7) ? flowers(1 + ri(3)) : [],
+  });
+  if (chance(0.12)) maybeTenpai(h, 1);
+  return h;
+}
+
+/** 出街一兩組、順刻夾雜，接近實戰食胡。 */
+function streetHand(): Hand {
+  const c = ctx();
+  const roll = ri(3);
+  let melds: Meld[];
+  let winAt: number;
+  let winTile: string;
+  if (roll === 0) {
+    melds = [chow("2m", "3m", "4m"), chow("6m", "7m", "8m"), chow("3p", "4p", "5p"), pung("9m"), pung("8p")];
+    winAt = 0;
+    winTile = "2m";
+  } else if (roll === 1) {
+    melds = [chow("2m", "3m", "4m"), chow("5p", "6p", "7p"), chow("2s", "3s", "4s"), pung("8s"), pung(pick(["C", "F", "B"]))];
+    winAt = 1;
+    winTile = "6p";
+  } else {
+    const n = pick([4, 5]);
+    melds = [chow("1m", "2m", "3m"), chow("7p", "8p", "9p"), pung(`${n}m`), pung(`${n}s`), pung(pick(["C", "F", "B"]))];
+    winAt = 0;
+    winTile = "2m";
+  }
+  openOthers(melds, winAt, chance(0.8) ? 1 + (chance(0.4) ? 1 : 0) : 0);
+  const h = shell({
+    ...c,
+    source: "日常",
+    melds,
+    pair: pick(WINDS),
+    winTile,
+    winBy: chance(0.4) ? "zimo" : "ron",
+    winAt,
+    flowers: chance(0.55) ? flowers(1 + ri(2)) : [],
+  });
+  if (chance(0.1)) maybeTenpai(h, 1);
+  return h;
+}
+
 function wuAn(): Hand {
   const c = ctx();
   const melds = [pung("2m"), pung("5p"), pung("8s"), pung("E"), pung("C")];
@@ -626,12 +699,13 @@ function qiang(): Hand {
   });
 }
 
-const BUILDERS = [
-  jiHu, jiHu, daPing, pingMixed, daSanYuan, daSiXi, xiaoSanYuan, qingYiSe, xiaoLiu,
-  siZiMei, quanDaiYi, duanYao, hunDai, yao13, () => ligu(false), () => ligu(true),
-  budai, qingYao, tianHu, diHu, renHu, haiDi, qiZhi, menQingTing, quanQiu, yiBu,
-  zaLong, lianPeng, gangShang, laoShao, wuAn, qiang,
+const RARE = [
+  daSanYuan, daSiXi, xiaoSanYuan, qingYiSe, xiaoLiu, siZiMei, quanDaiYi, hunDai,
+  yao13, () => ligu(false), () => ligu(true), budai, qingYao, tianHu, diHu, renHu,
+  haiDi, qiZhi, menQingTing, quanQiu, yiBu, zaLong, lianPeng, gangShang, wuAn, qiang,
 ];
+const PLAIN = [streetHand, streetHand, pingMixed, daPing, jiHu, laoShao, duanYao];
+const BUILDERS = [...Array(14).fill(commonDoor), ...PLAIN, ...PLAIN, ...RARE];
 
 export function validateHand(h: Hand): string | null {
   const count = new Map<string, number>();

@@ -6,7 +6,7 @@ import { scoreHand } from "@/lib/score";
 import { FAN_TABLE } from "@/lib/table";
 import type { Hand } from "@/lib/types";
 import { tileName } from "@/lib/tiles";
-import { flowerNames, viewHand, type TileFace } from "@/lib/view";
+import { viewHand, type TileFace } from "@/lib/view";
 
 type Stats = { ok: number; bad: number; streak: number };
 
@@ -19,12 +19,13 @@ function tone(id: string): string {
 }
 
 function Tile({ face, flower }: { face: TileFace; flower?: boolean }) {
-  return (
+  const tile = (
     <span className={`tile ${flower ? "flower" : ""} ${face.win ? "win" : ""}`} style={{ color: tone(face.id) }}>
-      {face.win && <i className="hu">胡</i>}
       {tileName(face.id)}
     </span>
   );
+  if (!face.win || flower) return tile;
+  return <span className="win-slot">{tile}</span>;
 }
 
 function Table() {
@@ -137,21 +138,32 @@ export default function Page() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-white/70">{flowerNames(hand.flowers)}</p>
+            <p className="text-sm text-white/70">無花</p>
           )}
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          {view.groups.map((group, i) => (
-            <div key={i} className={`max-w-full rounded-2xl px-2 py-2 ${group.open ? "bg-amber-950/40" : "bg-black/25"}`}>
-              <p className="mb-1 px-1 text-xs text-white/55">{group.label}</p>
-              <div className="flex max-w-full flex-wrap gap-1">
-                {group.tiles.map((face, j) => (
+        <div className="board">
+          {view.called.length > 0 && (
+            <div className="called-row">
+              {view.called.map((group, i) => (
+                <div key={i} className="meld">
+                  {group.map((face, j) => (
+                    <Tile key={j} face={face} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="hand-row">
+            {view.closed.map((group, i) => (
+              <div key={i} className="meld">
+                {group.map((face, j) => (
                   <Tile key={j} face={face} />
                 ))}
               </div>
-            </div>
-          ))}
+            ))}
+            {view.win && <Tile face={view.win} />}
+          </div>
         </div>
 
         <form

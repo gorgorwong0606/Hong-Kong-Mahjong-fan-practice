@@ -1,6 +1,7 @@
 import { blankFlags, type Hand, type Meld } from "./types";
 import { scoreHand } from "./score";
 import { stressBuilders } from "./deal";
+import { viewHand } from "./view";
 
 function chow(a: string, b: string, c: string, open = false): Meld {
   return { kind: "chow", tiles: [a, b, c].sort(), open };
@@ -256,6 +257,55 @@ expectScore(
   }),
   { 五暗刻: 80, 對對胡: 30, "三色連碰（大）": 15, 無字花: 5, 門清: 5, 將眼: 2, 對碰: 1 },
 );
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m"), pung("3p"), pung("3s"), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 0,
+  }),
+  { 三暗刻: 15, 五門齊: 10, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 無花: 1 },
+);
+
+expectScore(
+  hand({
+    seat: "E",
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m"), pung("3p"), pung("3s"), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 0,
+    flowers: ["SE1", "GR3"],
+  }),
+  { 三暗刻: 15, 五門齊: 10, 門清: 5, 二兄弟: 5, 老少: 3, 箭: 2, 正花: 2, 爛花: 1 },
+);
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m", true), pung("3p"), pung("3s", true), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "ron",
+    winAt: 0,
+  }),
+  { 五門齊: 10, 二兄弟: 5, 二暗刻: 5, 老少: 3, 箭: 2, 無花: 1 },
+);
+
+const shown = viewHand(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("7m", "8m", "9m", true), pung("3p"), pung("3s", true), pung("F")],
+    pair: "N",
+    winTile: "1m",
+    winBy: "zimo",
+    winAt: 0,
+  }),
+);
+if (shown.tags[0] !== "自摸") throw new Error(`tag ${shown.tags[0]}`);
+if (shown.called.length !== 2) throw new Error(`called ${shown.called.length}`);
+if (shown.win?.id !== "1m") throw new Error("win tile");
+if ([...shown.called, ...shown.closed].flat().some((t) => t.id === "1m")) throw new Error("win still in a row");
 
 const errors = stressBuilders(8);
 if (errors.length) throw new Error(errors.slice(0, 12).join("\n"));
