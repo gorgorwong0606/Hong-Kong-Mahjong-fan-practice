@@ -6,7 +6,7 @@ export const FAN_TABLE: { name: string; fan: string; note: string }[] = [
   { name: "天聽", fan: "45", note: "門清、門清自摸另計" },
   { name: "雞胡 / 鴨胡", fan: "25 / 13", note: "其他番加完只得 1 番。自摸係鴨胡" },
   { name: "對碰 / 假獨 / 獨獨", fan: "1 / 1 / 2", note: "食刻、邊張或嵌張、單釣" },
-  { name: "平胡 / 將眼", fan: "5 / 2", note: "將眼係二、五、八" },
+  { name: "平胡 / 將眼", fan: "5 / 2", note: "平胡係五順兩面，眼可以係番子。將眼係二、五、八" },
   { name: "老少 / 老少碰", fan: "3 / 5", note: "同門一二三加七八九，或一一一加九九九" },
   { name: "無字 / 無字花 / 無字花平胡", fan: "1 / 5 / 15", note: "大的已包括細的" },
   { name: "門清", fan: "5", note: "暗槓都計" },

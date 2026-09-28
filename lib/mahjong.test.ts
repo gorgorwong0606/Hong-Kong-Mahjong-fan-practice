@@ -41,13 +41,27 @@ const flags = blankFlags;
 
 expectScore(
   hand({
-    melds: [chow("1m", "2m", "3m", true), chow("4m", "5m", "6m"), chow("2p", "3p", "4p"), chow("6s", "7s", "8s"), chow("7p", "8p", "9p")],
+    melds: [chow("1m", "2m", "3m", true), chow("4m", "5m", "6m"), chow("2p", "3p", "4p"), pung("9s"), chow("6s", "7s", "8s")],
     pair: "E",
     winTile: "4m",
     winBy: "ron",
     winAt: 1,
   }),
   { 雞胡: 25 },
+);
+
+expectScore(
+  hand({
+    seat: "N",
+    round: "W",
+    dealer: true,
+    melds: [chow("1m", "2m", "3m"), chow("4m", "5m", "6m"), chow("2p", "3p", "4p"), chow("6s", "7s", "8s", true), chow("7p", "8p", "9p")],
+    pair: "B",
+    winTile: "4m",
+    winBy: "ron",
+    winAt: 1,
+  }),
+  { 平胡: 5, 無花: 1 },
 );
 
 expectScore(
@@ -83,7 +97,7 @@ expectScore(
     winAt: 1,
     flags: { ...flags(), diHu: true },
   }),
-  { 地胡: 110, 無花: 1 },
+  { 地胡: 110, 平胡: 5, 無花: 1 },
 );
 
 expectScore(
@@ -95,7 +109,7 @@ expectScore(
     winAt: 1,
     flags: { ...flags(), tenpai: true },
   }),
-  { 門清聽牌自摸: 20, 無花: 1 },
+  { 門清聽牌自摸: 20, 平胡: 5, 無花: 1 },
 );
 
 expectScore(
@@ -107,7 +121,7 @@ expectScore(
     winAt: 1,
     flags: { ...flags(), tianTing: true },
   }),
-  { 天聽: 45, 門清自摸: 8, 無花: 1 },
+  { 天聽: 45, 門清自摸: 8, 平胡: 5, 無花: 1 },
 );
 
 expectScore(

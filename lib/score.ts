@@ -118,7 +118,7 @@ function addFlowers(h: Hand, lines: Line[], noHonor: boolean, pinghu: boolean) {
   if (realPing && noHonor && noFlower) {
     push(lines, "無字花平胡", 15, "無番子、無花、平胡，已包括呢三項");
   } else {
-    if (realPing) push(lines, "平胡", 5, "五順、眼唔係字、兩面食胡");
+    if (realPing) push(lines, "平胡", 5, "五順、兩面食胡，眼可以係番子");
     if (noHonor && noFlower) push(lines, "無字花", 5, "無番子兼無花，已包括無字、無花");
     else if (noHonor) push(lines, "無字", 1, "沒有番子");
     else if (noFlower) push(lines, "無花", 1, "一隻花都無");
@@ -522,7 +522,7 @@ function addStandard(h: Hand, lines: Line[]): { pinghu: boolean; noHonor: boolea
 
   const allChow = h.melds.length === 5 && h.melds.every((m) => m.kind === "chow");
   const shape = waitShape(h);
-  const pinghu = allChow && isSuit(h.pair) && shape === "ryanmen" && !yibu;
+  const pinghu = allChow && shape === "ryanmen" && !yibu;
   addWait(h, lines, pinghu);
 
   if (isSuit(h.pair) && [2, 5, 8].includes(rank(h.pair))) push(lines, "將眼", 2, tileName(h.pair));

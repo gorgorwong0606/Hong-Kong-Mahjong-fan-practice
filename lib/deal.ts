@@ -61,7 +61,7 @@ function shell(partial: Omit<Hand, "flowers" | "flags"> & { flowers?: string[]; 
 
 function jiHu(): Hand {
   const c = ctx();
-  const melds = [chow("1m", "2m", "3m"), chow("4m", "5m", "6m"), chow("2p", "3p", "4p"), chow("6s", "7s", "8s"), chow("7p", "8p", "9p")];
+  const melds = [chow("1m", "2m", "3m"), chow("4m", "5m", "6m"), chow("2p", "3p", "4p"), pung("9s"), chow("6s", "7s", "8s")];
   const openAt = pick([0, 2, 3, 4]);
   melds.forEach((m, i) => (m.open = i === openAt));
   return shell({
