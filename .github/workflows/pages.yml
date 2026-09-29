@@ -30,8 +30,10 @@ jobs:
         run: |
           BASE="${{ steps.pages.outputs.base_path }}"
           if [ "$BASE" = "/" ]; then BASE=""; fi
+          BASE="${BASE%/}"
           echo "NEXT_PUBLIC_BASE_PATH=$BASE" >> "$GITHUB_ENV"
-          npm run build
+          # GITHUB_ENV only applies to later steps, so this build must see it now.
+          NEXT_PUBLIC_BASE_PATH="$BASE" npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
