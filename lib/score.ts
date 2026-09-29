@@ -125,7 +125,13 @@ function addFlowers(h: Hand, lines: Line[], noHonor: boolean, pinghu: boolean) {
   }
 }
 
-function addSituation(h: Hand, lines: Line[]) {
+/** 五組暗刻或暗槓加眼，而且門清自摸。出沖或者有出街牌都唔算。 */
+export function isKanKan(h: Hand): boolean {
+  if (h.special || h.winBy !== "zimo" || !isMenqing(h) || h.melds.length !== 5) return false;
+  return h.melds.every((m) => (m.kind === "pung" || m.kind === "kong") && !m.open);
+}
+
+function addSituation(h: Hand, lines: Line[], kankan: boolean) {
   const f = h.flags;
   const zimo = h.winBy === "zimo";
   const menqing = isMenqing(h);
@@ -136,7 +142,9 @@ function addSituation(h: Hand, lines: Line[]) {
   if (f.renHu) push(lines, "人胡", 70, "閒家一巡內食胡，唔計門清");
   if (f.tianTing) push(lines, "天聽", 45, "第一隻牌前聽牌");
 
-  if (!suppress && !f.tianTing) {
+  if (kankan) {
+    if (f.tenpai) push(lines, "聽牌", 5, "坎坎糊已包括門清、自摸");
+  } else if (!suppress && !f.tianTing) {
     if (menqing && f.tenpai && zimo) push(lines, "門清聽牌自摸", 20, "已包括門清、聽牌、自摸");
     else if (menqing && f.tenpai) push(lines, "門清聽牌", 15, "已包括門清、聽牌");
     else if (menqing && zimo) push(lines, "門清自摸", 8, "已包括門清同自摸");
@@ -392,15 +400,17 @@ function seqLabel(seq: string): string {
   return seq.split("").map((d) => n[Number(d)]).join("");
 }
 
-function addPungs(h: Hand, lines: Line[], qingyao: boolean) {
+function addPungs(h: Hand, lines: Line[], qingyao: boolean, kankan: boolean) {
   const ps = pungsOf(h.melds);
+  const dragons = new Set(ps.filter((p) => "CFB".includes(p.tile)).map((p) => p.tile));
+  const bigDragons = dragons.size === 3;
   for (const p of ps) {
     const t = p.tile;
     if ("ESWN".includes(t)) {
       const zheng = t === h.seat || t === h.round;
       push(lines, zheng ? "正風／正圈" : "偏風", zheng ? 2 : 1, tileName(t) + (zheng ? "（正只計 2）" : ""));
     }
-    if ("CFB".includes(t)) push(lines, "箭", 2, tileName(t));
+    if ("CFB".includes(t) && !bigDragons) push(lines, "箭", 2, tileName(t));
     if (p.kong) push(lines, p.open ? "明槓" : "暗槓", p.open ? 1 : 2, tileName(t));
   }
   const an = ps.filter((p) => !p.open).length;
@@ -410,11 +420,9 @@ function addPungs(h: Hand, lines: Line[], qingyao: boolean) {
     4: ["四暗刻", 35],
     5: ["五暗刻", 80],
   };
-  if (anFan[an]) push(lines, anFan[an][0], anFan[an][1], `${an} 組暗刻`);
-
-  const dragons = new Set(ps.filter((p) => "CFB".includes(p.tile)).map((p) => p.tile));
+  if (!kankan && anFan[an]) push(lines, anFan[an][0], anFan[an][1], `${an} 組暗刻`);
   const winds = new Set(ps.filter((p) => "ESWN".includes(p.tile)).map((p) => p.tile));
-  if (dragons.size === 3) push(lines, "大三元", 50, "中發白刻");
+  if (dragons.size === 3) push(lines, "大三元", 50, "中發白刻，三組箭刻已包括");
   else if (dragons.size === 2 && "CFB".includes(h.pair) && !dragons.has(h.pair)) push(lines, "小三元", 25, "兩刻一對");
   if (winds.size === 4) push(lines, "大四喜", 120, "東南西北刻");
   else if (winds.size === 3 && "ESWN".includes(h.pair) && !winds.has(h.pair)) push(lines, "小四喜", 60, "三刻一對");
@@ -507,15 +515,16 @@ function addWait(h: Hand, lines: Line[], pinghu: boolean) {
   else if (w === "penchan" || w === "kanchan") push(lines, "假獨", 1, w === "kanchan" ? "嵌張" : "邊張");
 }
 
-function addStandard(h: Hand, lines: Line[]): { pinghu: boolean; noHonor: boolean } {
+function addStandard(h: Hand, lines: Line[], kankan: boolean): { pinghu: boolean; noHonor: boolean } {
   const tiles = handTiles(h);
   const noHonor = !tiles.some(isHonor);
   const qingyao = addTerminals(h, lines, tiles, h.melds);
-  const xiaoliu = addPungs(h, lines, qingyao);
+  const xiaoliu = addPungs(h, lines, qingyao, kankan);
   addLaoShao(lines, h, qingyao);
   const yibu = addChows(lines, chowsOf(h.melds));
   const allPung = h.melds.length === 5 && h.melds.every((m) => m.kind === "pung" || m.kind === "kong");
-  if (allPung && !xiaoliu) push(lines, "對對胡", 30, "五組刻");
+  if (kankan) push(lines, "坎坎糊", 200, "五組暗刻或暗槓加眼，門清自摸。已包括門清、自摸、五暗刻、對對胡");
+  else if (allPung && !xiaoliu) push(lines, "對對胡", 30, "五組刻");
   addColors(lines, tiles, xiaoliu);
 
   const allChow = h.melds.length === 5 && h.melds.every((m) => m.kind === "chow");
@@ -586,9 +595,10 @@ function addSpecial(h: Hand, lines: Line[]): { pinghu: boolean; noHonor: boolean
 
 export function scoreHand(h: Hand): { lines: Line[]; total: number } {
   const lines: Line[] = [];
-  const info = h.special ? addSpecial(h, lines) : addStandard(h, lines);
+  const kankan = isKanKan(h);
+  const info = h.special ? addSpecial(h, lines) : addStandard(h, lines, kankan);
   addFlowers(h, lines, info.noHonor, info.pinghu);
-  addSituation(h, lines);
+  addSituation(h, lines, kankan);
   const total = lines.reduce((s, l) => s + l.fan, 0);
   if (total === 1) {
     const from = lines.map((l) => `${l.name}${l.fan}`).join("、");

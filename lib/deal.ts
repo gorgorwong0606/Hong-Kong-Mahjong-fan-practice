@@ -683,10 +683,30 @@ function wuAn(): Hand {
     melds,
     pair: "2s",
     winTile: melds[winAt].tiles[0],
-    winBy: "zimo",
+    winBy: "ron",
     winAt,
   });
   maybeTenpai(h, 0.3);
+  return h;
+}
+
+function kanKan(): Hand {
+  const c = ctx();
+  const tiles = ["2m", "5p", "8s", "4m", "9p"];
+  const kongAt = chance(0.35) ? ri(5) : -1;
+  const melds = tiles.map((t, i) => (i === kongAt ? kong(t) : pung(t)));
+  const winAt = ri(5);
+  const h = shell({
+    ...c,
+    source: "坎坎糊",
+    melds,
+    pair: "9s",
+    winTile: melds[winAt].tiles[0],
+    winBy: "zimo",
+    winAt,
+    flowers: chance(0.3) ? flowers(1) : [],
+  });
+  maybeTenpai(h, 0.25);
   return h;
 }
 
@@ -708,7 +728,7 @@ function qiang(): Hand {
 const RARE = [
   daSanYuan, daSiXi, xiaoSanYuan, qingYiSe, xiaoLiu, siZiMei, quanDaiYi, hunDai,
   yao13, () => ligu(false), () => ligu(true), budai, qingYao, tianHu, diHu, renHu,
-  haiDi, qiZhi, menQingTing, quanQiu, yiBu, zaLong, lianPeng, gangShang, wuAn, qiang,
+  haiDi, qiZhi, menQingTing, quanQiu, yiBu, zaLong, lianPeng, gangShang, wuAn, kanKan, qiang,
 ];
 const PLAIN = [streetHand, streetHand, pingMixed, daPing, jiHu, laoShao, duanYao];
 const BUILDERS = [...Array(14).fill(commonDoor), ...PLAIN, ...PLAIN, ...RARE];

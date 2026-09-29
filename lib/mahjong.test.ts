@@ -86,7 +86,7 @@ expectScore(
     winBy: "zimo",
     winAt: "pair",
   }),
-  { 小六姊妹: 300, 五暗刻: 80, 獨獨: 2, 無字花: 5, 門清自摸: 8 },
+  { 小六姊妹: 300, 坎坎糊: 200, 獨獨: 2, 無字花: 5 },
 );
 
 expectScore(
@@ -137,10 +137,8 @@ expectScore(
   }),
   {
     字一色: 150,
+    坎坎糊: 200,
     大四喜: 120,
-    五暗刻: 80,
-    對對胡: 30,
-    門清自摸: 8,
     "正風／正圈": 4,
     偏風: 2,
     箭: 2,
@@ -157,7 +155,7 @@ expectScore(
     winBy: "zimo",
     winAt: "pair",
   }),
-  { 清么: 350, 五暗刻: 80, 對對胡: 30, 缺五: 10, 門清自摸: 8, 無字花: 5, 獨獨: 2 },
+  { 清么: 350, 坎坎糊: 200, 缺五: 10, 無字花: 5, 獨獨: 2 },
 );
 
 expectScore(
@@ -192,7 +190,7 @@ expectScore(
     seat: "S",
     round: "E",
   }),
-  { 五暗刻: 80, 對對胡: 30, 大三兄弟: 20, 混帶三: 20, 門清自摸: 8, 獨獨: 2, 箭: 2, "正風／正圈": 2, 無花: 1 },
+  { 坎坎糊: 200, 大三兄弟: 20, 混帶三: 20, 獨獨: 2, 箭: 2, "正風／正圈": 2, 無花: 1 },
 );
 
 expectScore(
@@ -330,6 +328,77 @@ expectScore(
     winAt: 0,
   }),
   { 二兄弟: 5, 二暗刻: 5, 老少: 3, 箭: 2, 無花: 1 },
+);
+
+function kong(t: string, open = false): Meld {
+  return { kind: "kong", tiles: [t, t, t, t], open };
+}
+
+expectScore(
+  hand({
+    melds: [pung("2m"), pung("5p"), pung("8s"), pung("4m"), pung("9p")],
+    pair: "9s",
+    winTile: "9s",
+    winBy: "zimo",
+    winAt: "pair",
+  }),
+  { 坎坎糊: 200, 無字花: 5, 獨獨: 2 },
+);
+
+expectScore(
+  hand({
+    melds: [kong("2m"), pung("5p"), pung("8s"), pung("4m"), pung("9p")],
+    pair: "9s",
+    winTile: "5p",
+    winBy: "zimo",
+    winAt: 1,
+    flags: { ...flags(), tenpai: true },
+  }),
+  { 坎坎糊: 200, "四歸一（暗）": 10, 無字花: 5, 聽牌: 5, 暗槓: 2, 對碰: 1 },
+);
+
+expectScore(
+  hand({
+    melds: [pung("2m"), pung("5p", true), pung("8s"), pung("4m"), pung("9p")],
+    pair: "9s",
+    winTile: "9s",
+    winBy: "zimo",
+    winAt: "pair",
+  }),
+  { 對對胡: 30, 四暗刻: 35, 無字花: 5, 自摸: 1, 獨獨: 2 },
+);
+
+expectScore(
+  hand({
+    melds: [pung("C", true), pung("F"), pung("B"), pung("2m"), pung("5p")],
+    pair: "8s",
+    winTile: "2m",
+    winBy: "zimo",
+    winAt: 3,
+  }),
+  { 大三元: 50, 對對胡: 30, 四暗刻: 35, 將眼: 2, 自摸: 1, 對碰: 1, 無花: 1 },
+);
+
+expectScore(
+  hand({
+    melds: [pung("C"), pung("F"), pung("B"), pung("1m"), pung("9m")],
+    pair: "5p",
+    winTile: "C",
+    winBy: "zimo",
+    winAt: 0,
+  }),
+  { 坎坎糊: 200, 大三元: 50, 老少碰: 5, 缺一門: 5, 將眼: 2, 對碰: 1, 無花: 1 },
+);
+
+expectScore(
+  hand({
+    melds: [pung("C"), pung("F"), pung("2m"), pung("5p"), pung("9s")],
+    pair: "B",
+    winTile: "B",
+    winBy: "zimo",
+    winAt: "pair",
+  }),
+  { 坎坎糊: 200, 小三元: 25, 箭: 4, 無花: 1, 獨獨: 2 },
 );
 
 const shown = viewHand(
