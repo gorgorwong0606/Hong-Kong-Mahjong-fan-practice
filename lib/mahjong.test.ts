@@ -75,7 +75,29 @@ expectScore(
     winBy: "zimo",
     winAt: 1,
   }),
-  { 無字花平胡: 15, "明龍（暗）": 20, 將眼: 2, 門清自摸: 8, 老少: 3, 二相逢: 4 },
+  { 無字花平胡: 15, "明龍（暗）": 20, 將眼: 2, 門清自摸: 8, 二相逢: 4 },
+);
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m"), chow("4m", "5m", "6m"), chow("7m", "8m", "9m"), chow("1p", "2p", "3p"), chow("7p", "8p", "9p")],
+    pair: "5s",
+    winTile: "4m",
+    winBy: "zimo",
+    winAt: 1,
+  }),
+  { 無字花平胡: 15, "明龍（暗）": 20, 門清自摸: 8, 二相逢: 4, 老少: 3, 將眼: 2 },
+);
+
+expectScore(
+  hand({
+    melds: [chow("1m", "2m", "3m", true), chow("4m", "5m", "6m", true), chow("7m", "8m", "9m"), chow("2p", "3p", "4p"), chow("5s", "6s", "7s")],
+    pair: "E",
+    winTile: "2m",
+    winBy: "ron",
+    winAt: 0,
+  }),
+  { 明龍: 10, 假獨: 1, 無花: 1 },
 );
 
 expectScore(

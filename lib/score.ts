@@ -357,7 +357,7 @@ function addChows(lines: Line[], chows: Chow[]) {
     if ([1, 4, 7].every((st) => cs.some((c) => c.start === st))) {
       const used = [1, 4, 7].map((st) => cs.find((c) => c.start === st)!);
       const an = used.every((c) => !c.open);
-      push(lines, an ? "明龍（暗）" : "明龍", an ? 20 : 10, suitLabel(s) + "一至九");
+      push(lines, an ? "明龍（暗）" : "明龍", an ? 20 : 10, suitLabel(s) + "一至九，已包括老少");
     }
   }
   const c1 = chows.filter((c) => c.start === 1);
@@ -501,7 +501,7 @@ function addLaoShao(lines: Line[], h: Hand, qingyao: boolean) {
   const ps = pungsOf(h.melds);
   for (const s of ["m", "p", "s"]) {
     const has = (st: number) => ch.some((c) => c.suit === s && c.start === st);
-    if (has(1) && has(7)) push(lines, "老少", 3, suitLabel(s) + "一二三加七八九");
+    if (has(1) && has(7) && !has(4)) push(lines, "老少", 3, suitLabel(s) + "一二三加七八九");
     const pung = (n: number) => ps.some((p) => isSuit(p.tile) && suitOf(p.tile) === s && rank(p.tile) === n);
     if (pung(1) && pung(9)) push(lines, "老少碰", 5, suitLabel(s) + "一一一加九九九");
   }
