@@ -13,6 +13,18 @@ npm run dev -- -p 4317
 
 打開 [http://127.0.0.1:4317](http://127.0.0.1:4317)。
 
+## 長期公開網址
+
+用 GitHub Pages。免費，網址係 `https://你的名字.github.io/...`，GitHub 自動開 HTTPS。呢個站冇登入、冇資料庫、冇密碼，只係計番，適合咁放。
+
+1. 喺 GitHub 開一個新 repo，揀 Public。免費 Pages 要公開 repo。網站本身係公開，所以程式碼一齊公開先免費。
+2. Repo 名叫 `你的名字.github.io`，網址就係 `https://你的名字.github.io/`。用其他名，網址就係 `https://你的名字.github.io/repo名/`。
+3. 將呢個專案推上去，分支用 `main`。
+4. 去 repo 嘅 Settings → Pages → Build and deployment，Source 揀 GitHub Actions。
+5. 等 Actions 跑完。網址會顯示喺該次部署上面。
+
+唔好將 token、密碼放進 repo。臨時隧道會過期，長期用就以呢條 `github.io` 為準。
+
 ```bash
 npm test
 ```
