@@ -1,6 +1,6 @@
 import { blankFlags, type Hand, type Meld } from "./types";
 import { scoreHand } from "./score";
-import { dealHand, stressBuilders, validateHand } from "./deal";
+import { chooseWinAt, dealHand, stressBuilders, validateHand } from "./deal";
 import { FAN_TABLE, fanRowMatches } from "./table";
 import { viewHand } from "./view";
 
@@ -440,6 +440,24 @@ if ([...shown.called, ...shown.closed].flat().some((t) => t.id === "1m")) throw 
 
 const errors = stressBuilders(8);
 if (errors.length) throw new Error(errors.slice(0, 12).join("\n"));
+
+for (let i = 0; i < 200; i++) {
+  const at = chooseWinAt(["kong", "pung", "chow", "pung", "chow"]);
+  if (at === 0 || at === "pair") throw new Error(`win landed on kong or skipped a live meld: ${at}`);
+}
+if (chooseWinAt(["kong", "kong", "kong", "kong", "kong"]) !== "pair") throw new Error("all-kong hand should win on the pair");
+
+let kongHands = 0;
+for (let i = 0; i < 400; i++) {
+  const h = dealHand();
+  const err = validateHand(h);
+  if (err) throw new Error(err);
+  if (typeof h.winAt === "number" && h.melds[h.winAt]?.kind === "kong") {
+    throw new Error(`won on kong (${h.source ?? "hand"} ${h.winTile})`);
+  }
+  if (h.melds.some((m) => m.kind === "kong")) kongHands++;
+}
+if (kongHands < 8) throw new Error(`only ${kongHands} hands contained a kong`);
 
 function matchedNames(q: string) {
   return FAN_TABLE.filter((row) => fanRowMatches(row, q)).map((row) => row.name);
