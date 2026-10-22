@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { dealHand } from "@/lib/deal";
 import { scoreHand } from "@/lib/score";
-import { FAN_TABLE } from "@/lib/table";
+import { FAN_TABLE, fanRowMatches } from "@/lib/table";
 import type { Hand } from "@/lib/types";
 import { tileName } from "@/lib/tiles";
 import { viewHand, type TileFace } from "@/lib/view";
@@ -22,21 +22,58 @@ function Tile({ face, flower }: { face: TileFace; flower?: boolean }) {
 }
 
 function Table() {
+  const [q, setQ] = useState("");
+  const searchId = useId();
+  const query = q.trim();
+  const rows = FAN_TABLE.filter((row) => fanRowMatches(row, query));
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/25">
-      <div className="border-b border-white/10 px-4 py-3 text-sm font-semibold">番數表</div>
+      <div className="flex items-baseline justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div className="text-sm font-semibold">番數表</div>
+        {query ? <div className="text-xs font-normal text-white/50">{rows.length} 項</div> : null}
+      </div>
+      <div className="border-b border-white/10 px-3 py-2">
+        <label className="sr-only" htmlFor={searchId}>
+          搜尋番種或說明
+        </label>
+        <div className="relative">
+          <input
+            id={searchId}
+            type="text"
+            enterKeyHint="search"
+            value={q}
+            autoComplete="off"
+            placeholder="搜尋番種或說明"
+            onChange={(e) => setQ(e.target.value)}
+            className="h-10 w-full rounded-xl border border-white/15 bg-black/30 px-3 pr-14 text-base outline-none placeholder:text-white/40 focus:border-amber-300"
+          />
+          {q ? (
+            <button
+              type="button"
+              onClick={() => setQ("")}
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs text-amber-200"
+            >
+              清除
+            </button>
+          ) : null}
+        </div>
+      </div>
       <div className="max-h-[70vh] overflow-auto">
-        <table className="w-full text-left text-sm">
-          <tbody>
-            {FAN_TABLE.map((row) => (
-              <tr key={row.name} className="border-t border-white/10">
-                <td className="px-3 py-2 align-top">{row.name}</td>
-                <td className="whitespace-nowrap px-2 py-2 align-top text-amber-200">{row.fan}</td>
-                <td className="px-3 py-2 align-top text-white/60">{row.note}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {rows.length === 0 ? (
+          <p className="px-4 py-6 text-sm text-white/60">冇符合「{query}」嘅番</p>
+        ) : (
+          <table className="w-full text-left text-sm">
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.name} className="border-t border-white/10">
+                  <td className="px-3 py-2 align-top">{row.name}</td>
+                  <td className="px-2 py-2 align-top whitespace-nowrap text-amber-200">{row.fan}</td>
+                  <td className="px-3 py-2 align-top text-white/60">{row.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
       <p className="px-4 py-3 text-xs leading-5 text-white/60">
         正花：東春梅、南夏蘭、西秋菊、北冬竹。花胡、七搶一、雪上加霜、圍骰呢類即時牌局，呢度唔出。坎坎糊已包括門清、自摸、五暗刻、對對胡。大三元已包括三組箭刻。明龍已包括同門老少。
