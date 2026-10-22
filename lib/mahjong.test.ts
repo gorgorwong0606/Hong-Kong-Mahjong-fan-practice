@@ -1,6 +1,7 @@
 import { blankFlags, type Hand, type Meld } from "./types";
 import { scoreHand } from "./score";
-import { stressBuilders } from "./deal";
+import { dealHand, stressBuilders, validateHand } from "./deal";
+import { FAN_TABLE, fanRowMatches } from "./table";
 import { viewHand } from "./view";
 
 function chow(a: string, b: string, c: string, open = false): Meld {
@@ -439,5 +440,69 @@ if ([...shown.called, ...shown.closed].flat().some((t) => t.id === "1m")) throw 
 
 const errors = stressBuilders(8);
 if (errors.length) throw new Error(errors.slice(0, 12).join("\n"));
+
+function matchedNames(q: string) {
+  return FAN_TABLE.filter((row) => fanRowMatches(row, q)).map((row) => row.name);
+}
+const anRows = matchedNames("二暗刻");
+if (!anRows.some((name) => name.includes("暗刻"))) throw new Error(`search 二暗刻 → ${anRows.join(" / ")}`);
+const broRows = matchedNames("二兄弟");
+if (!broRows.some((name) => name.includes("兄弟"))) throw new Error(`search 二兄弟 → ${broRows.join(" / ")}`);
+const laoRows = matchedNames("老少");
+if (!laoRows.some((name) => name.startsWith("老少"))) throw new Error(`search 老少 → ${laoRows.join(" / ")}`);
+if (matchedNames("海底撈月").length === 0) throw new Error("search 海底撈月");
+if (matchedNames("正花對住門風").length === 0) throw new Error("search note");
+if (matchedNames("zzzz").length !== 0) throw new Error("search noise");
+if (matchedNames("   ").length !== FAN_TABLE.length) throw new Error("search blank");
+
+function auditDeals(n = 400) {
+  let lao = 0;
+  let bro = 0;
+  let an2 = 0;
+  let joint = 0;
+  let bad = 0;
+  const sources = new Map<string, number>();
+  const patterns = new Set<string>();
+  const headlines = new Map<string, number>();
+  const keys = ["平胡", "明龍", "雜龍", "般高", "對對胡", "清一色", "缺一門", "二相逢", "斷么", "步步高", "姊妹", "三相逢", "求人"];
+  for (const key of keys) headlines.set(key, 0);
+  for (let i = 0; i < n; i++) {
+    const h = dealHand();
+    const err = validateHand(h);
+    if (err) {
+      bad++;
+      continue;
+    }
+    const names = scoreHand(h).lines.map((line) => line.name);
+    patterns.add([...names].sort().join("|"));
+    sources.set(h.source ?? "?", (sources.get(h.source ?? "?") ?? 0) + 1);
+    const hasLao = names.includes("老少") || names.includes("老少碰");
+    const hasBro = names.some((name) => name.includes("兄弟"));
+    const hasAn2 = names.includes("二暗刻");
+    if (hasLao) lao++;
+    if (hasBro) bro++;
+    if (hasAn2) an2++;
+    if (names.includes("老少") && names.includes("二兄弟") && hasAn2) joint++;
+    for (const key of keys) if (names.some((name) => name.includes(key))) headlines.set(key, (headlines.get(key) ?? 0) + 1);
+  }
+  const problems: string[] = [];
+  const rate = (x: number) => x / n;
+  if (bad) problems.push(`invalid ${bad}`);
+  if (rate(lao) > 0.16) problems.push(`老少 ${rate(lao).toFixed(3)}`);
+  if (rate(bro) > 0.16) problems.push(`兄弟 ${rate(bro).toFixed(3)}`);
+  if (rate(an2) > 0.3) problems.push(`二暗刻 ${rate(an2).toFixed(3)}`);
+  if (rate(joint) > 0.05) problems.push(`cluster ${rate(joint).toFixed(3)}`);
+  if (patterns.size < 40) problems.push(`patterns ${patterns.size}`);
+  if (sources.size < 18) problems.push(`sources ${sources.size}`);
+  const top = Math.max(...sources.values()) / n;
+  if (top > 0.12) problems.push(`top source ${top.toFixed(3)}`);
+  for (const key of keys) if ((headlines.get(key) ?? 0) < 1) problems.push(`missing ${key}`);
+  if (problems.length) {
+    const summary = [...headlines.entries()].map(([k, v]) => `${k}:${v}`).join(" ");
+    const src = [...sources.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k}:${v}`).join(" ");
+    throw new Error(`${problems.join("; ")}\n${summary}\n${src}`);
+  }
+}
+auditDeals();
 
 console.log("ok");

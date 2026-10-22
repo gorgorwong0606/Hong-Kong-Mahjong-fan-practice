@@ -54,3 +54,21 @@ export const FAN_TABLE: { name: string; fan: string; note: string }[] = [
   { name: "門清聽牌（自摸）", fan: "15 / 20", note: "已包括門清、聽牌；自摸嗰檔包括自摸" },
   { name: "一步登天", fan: "25", note: "唔計平胡" },
 ];
+
+/** Ignore separators in names like「二／三／四／五暗刻」so a search for「二暗刻」still hits. */
+export function fanRowMatches(row: { name: string; fan: string; note: string }, query: string) {
+  const needle = compactFanQuery(query);
+  if (!needle) return true;
+  const hay = compactFanQuery(`${row.name}${row.note}${row.fan}`);
+  if (hay.includes(needle)) return true;
+  let i = 0;
+  for (const ch of hay) {
+    if (ch === needle[i]) i += 1;
+    if (i === needle.length) return true;
+  }
+  return false;
+}
+
+function compactFanQuery(s: string) {
+  return s.replace(/[\s／/（）()、，,・．.+＋\-－]/g, "").toLowerCase();
+}
