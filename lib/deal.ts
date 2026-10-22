@@ -267,6 +267,15 @@ function toMelds(specs: Spec[]): Meld[] {
   });
 }
 
+/** A kong is already four tiles. Win on another meld, or on the pair when every meld is a kong. */
+export function chooseWinAt(kinds: readonly ("chow" | "pung" | "kong")[]): number | "pair" {
+  const choices: number[] = [];
+  kinds.forEach((kind, i) => {
+    if (kind !== "kong") choices.push(i);
+  });
+  return choices.length ? pick(choices) : "pair";
+}
+
 function finish(specs: Spec[], mode: Mode): Hand | null {
   if (specs.length !== 5 || !tally(specs)) return null;
   const pairs = legalPairs(specs, mode);
@@ -281,7 +290,7 @@ function finish(specs: Spec[], mode: Mode): Hand | null {
     winTile = pair;
   } else if (mode.winIndex !== undefined) {
     const m = melds[mode.winIndex];
-    if (!m) return null;
+    if (!m || m.kind === "kong") return null;
     winAt = mode.winIndex;
     winTile = mode.winTile ?? (m.kind === "chow" ? pick(m.tiles) : m.tiles[0]);
     if (!m.tiles.includes(winTile)) return null;
@@ -296,10 +305,15 @@ function finish(specs: Spec[], mode: Mode): Hand | null {
     winAt = w.i;
     winTile = w.id;
   } else {
-    const i = ri(melds.length);
-    const m = melds[i];
-    winAt = i;
-    winTile = m.kind === "chow" ? pick(m.tiles) : m.tiles[0];
+    const at = chooseWinAt(melds.map((m) => m.kind));
+    if (at === "pair") {
+      winAt = "pair";
+      winTile = pair;
+    } else {
+      const m = melds[at];
+      winAt = at;
+      winTile = m.kind === "chow" ? pick(m.tiles) : m.tiles[0];
+    }
   }
 
   applyOpens(melds, winAt, mode.open ?? defaultOpen());
